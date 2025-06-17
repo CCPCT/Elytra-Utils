@@ -20,140 +20,57 @@ public class configScreen extends Screen {
                 .setSavingRunnable(ModConfig::save);
 
         ConfigCategory generalTab = builder.getOrCreateCategory(Text.literal("General"));
-        ConfigCategory soundTab = builder.getOrCreateCategory(Text.literal("Sound"));
-        ConfigCategory screenTab = builder.getOrCreateCategory(Text.literal("Screen"));
-        ConfigCategory countTab = builder.getOrCreateCategory(Text.literal("Totem Counter"));
+        ConfigCategory screenTab = builder.getOrCreateCategory(Text.literal("Overlay"));
 
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
         // Auto Totem toggle
-        generalTab.addEntry(entryBuilder.startBooleanToggle(Text.literal("Auto Totem"),ModConfig.get().autoTotem)
-                .setDefaultValue(false)
-                .setTooltip(Text.literal("Don't use unless server allows"))
-                .setSaveConsumer(newValue -> {
-                    ModConfig.get().autoTotem = newValue;
-                })
-                .build());
 
         generalTab.addEntry(entryBuilder.startBooleanToggle(Text.literal("Chat feedback"),ModConfig.get().chatfeedback)
                 .setDefaultValue(true)
-                .setTooltip(Text.literal("Send feedback in chat (only u can see), e.g. u popped ur totem"))
+                .setTooltip(Text.literal("Send chat such as durability warning on chat"))
                 .setSaveConsumer(newValue -> {
                     ModConfig.get().chatfeedback = newValue;
                 })
                 .build());
 
-
-        // Custom Sound toggle
-        soundTab.addEntry(entryBuilder.startBooleanToggle(Text.literal("Enable Custom Sound"),ModConfig.get().customSound)
+        generalTab.addEntry(entryBuilder.startBooleanToggle(Text.literal("Disable Firework on wall"),ModConfig.get().disableFireworkOnWall)
                 .setDefaultValue(true)
-                .setTooltip(Text.literal("Enable custom sound when your totem pops (other players unaffected)"))
+                .setTooltip(Text.literal("Boost instead of placing firework on wall in flight"))
                 .setSaveConsumer(newValue -> {
-                    ModConfig.get().customSound = newValue;
+                    ModConfig.get().disableFireworkOnWall = newValue;
                 })
                 .build());
 
-        soundTab.addEntry(entryBuilder.startStrField(Text.literal("Sound Event"), ModConfig.get().customSoundName)
-            .setTooltip(Text.literal("Enter the sound ID (e.g., minecraft:entity.player.levelup)"))
-            .setDefaultValue("minecraft:item.shield.break")
-            .setSaveConsumer(newValue -> {
-                ModConfig.get().customSoundName = newValue;
-            })
-            .build());
-
-        soundTab.addEntry(entryBuilder.startFloatField(Text.literal("Volume"), ModConfig.get().customSoundVolume)
-            .setTooltip(Text.literal("Set the volume (1.5 = 150%)"))
-            .setMin(0.0f)
-            .setMax(10.0f)
-            .setDefaultValue(1.0f)
-            .setSaveConsumer(newValue -> {
-                ModConfig.get().customSoundVolume = newValue;
-            })
-            .build());
-
-        //screen tab
-        screenTab.addEntry(entryBuilder.startBooleanToggle(Text.literal("Enable Overlay"),ModConfig.get().totemPopScreen)
-            .setDefaultValue(false)
-            .setTooltip(Text.literal("Render screen vintage overlay effect when popped totem"))
-            .setSaveConsumer(newValue -> {
-                ModConfig.get().totemPopScreen = newValue;
-            })
-            .build());
-
-        screenTab.addEntry(builder.entryBuilder()
-                .startColorField(Text.literal("Color"), ModConfig.get().totemPopScreenColour)
-                .setDefaultValue(0xFFFF00)
-                .setTooltip(Text.literal("Colour of overlay effect"))
+        generalTab.addEntry(entryBuilder.startBooleanToggle(Text.literal("Elytra durability alert"),ModConfig.get().durabilityAlert)
+                .setDefaultValue(true)
+                .setTooltip(Text.literal("Text when elytra have low durability (<=10)"))
                 .setSaveConsumer(newValue -> {
-                    ModConfig.get().totemPopScreenColour = newValue;
+                    ModConfig.get().durabilityAlert = newValue;
                 })
                 .build());
 
-        screenTab.addEntry(entryBuilder.startIntField(Text.literal("Alpha"), ModConfig.get().totemPopScreenAlpha)
-                .setTooltip(Text.literal("Alpha (non-transparency/Opacity) of overlay"))
-                .setDefaultValue(255)
-                .setMin(0).setMax(255)
+        generalTab.addEntry(entryBuilder.startBooleanToggle(Text.literal("Replace breaking elytra"),ModConfig.get().replaceBreakingElytra)
+                .setDefaultValue(true)
+                .setTooltip(Text.literal("Text when elytra have low durability (<=10)"))
                 .setSaveConsumer(newValue -> {
-                    ModConfig.get().totemPopScreenAlpha = newValue;
+                    ModConfig.get().replaceBreakingElytra = newValue;
                 })
                 .build());
 
-        screenTab.addEntry(entryBuilder.startIntField(Text.literal("Duration"), ModConfig.get().totemPopScreenDuration)
-                .setTooltip(Text.literal("Overlay will end if equiped totem or after this value, in seconds"))
-                .setDefaultValue(20)
+        screenTab.addEntry(entryBuilder.startBooleanToggle(Text.literal("Enable Overlay"),ModConfig.get().flightOverlay)
+                .setDefaultValue(false)
+                .setTooltip(Text.literal("Show transparent screen outline in flight"))
                 .setSaveConsumer(newValue -> {
-                    ModConfig.get().totemPopScreenDuration = newValue;
+                    ModConfig.get().flightOverlay = newValue;
                 })
                 .build());
 
-        screenTab.addEntry(entryBuilder.startIntField(Text.literal("Width"), ModConfig.get().totemPopScreenWidth)
-                .setTooltip(Text.literal("Width of the overlay from border of the screen, in pixels"))
-                .setDefaultValue(100)
+        screenTab.addEntry(entryBuilder.startBooleanToggle(Text.literal("Enable Icon"),ModConfig.get().flightIcon)
+                .setDefaultValue(false)
+                .setTooltip(Text.literal("Show elytra icon in flight"))
                 .setSaveConsumer(newValue -> {
-                    ModConfig.get().totemPopScreenWidth = newValue;
-                })
-                .build());
-
-        //enabled size pos colour
-        countTab.addEntry(entryBuilder.startIntField(Text.literal("Seconds to display"), ModConfig.get().totemCountTime)
-                .setTooltip(Text.literal("-1=always render; 0=disable, positive integer=time to display after pop, in seconds"))
-                .setDefaultValue(0)
-                .setSaveConsumer(newValue -> {
-                    ModConfig.get().totemCountTime = newValue;
-                })
-                .build());
-
-        countTab.addEntry(builder.entryBuilder()
-                .startColorField(Text.literal("Text Color"), ModConfig.get().totemCountColour)
-                .setDefaultValue(0x000000)
-                .setTooltip(Text.literal("Colour of totem count text"))
-                .setSaveConsumer(newValue -> {
-                    ModConfig.get().totemCountColour = newValue;
-                })
-                .build());
-
-        countTab.addEntry(entryBuilder.startIntField(Text.literal("Alpha"), ModConfig.get().totemCountAlpha)
-                .setTooltip(Text.literal("Alpha (non-transparency/Opacity) of totem count text"))
-                .setDefaultValue(255)
-                .setMin(0).setMax(255)
-                .setSaveConsumer(newValue -> {
-                    ModConfig.get().totemCountAlpha = newValue;
-                })
-                .build());
-
-        countTab.addEntry(entryBuilder.startIntField(Text.literal("X position"), ModConfig.get().totemCountx)
-                .setTooltip(Text.literal("how many pixels from left of screen to start of text"))
-                .setDefaultValue(10)
-                .setSaveConsumer(newValue -> {
-                    ModConfig.get().totemCountx = newValue;
-                })
-                .build());
-
-        countTab.addEntry(entryBuilder.startIntField(Text.literal("Y position"), ModConfig.get().totemCounty)
-                .setTooltip(Text.literal("how many pixels from top of screen to start of text"))
-                .setDefaultValue(10)
-                .setSaveConsumer(newValue -> {
-                    ModConfig.get().totemCounty = newValue;
+                    ModConfig.get().flightIcon = newValue;
                 })
                 .build());
 

@@ -9,7 +9,6 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import CCPCT.ElytraUtils.util.Packets;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -43,8 +42,8 @@ public class ElytraUtilsClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (swapElytraKey.wasPressed()) {
                 // swap totem
-                IngameChat.sendChat("Switching totem");
-                Packets.swapUseItems(11);
+                Chat.send("Switching totem");
+                Logic.swapElytra();
                 //Packets.swapItems(9,10);
             }
 

@@ -8,7 +8,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.client.network.PendingUpdateManager;
 
 import java.util.ArrayList;
 
@@ -42,49 +41,26 @@ public class Packets implements ClientModInitializer {
                 return;
             }
             networkHandler.sendPacket(packetsToSend.getFirst());
-            IngameChat.sendChat("sendng");
+            Chat.send("sending packet");
             packetsToSend.removeFirst();
         });
     }
 
     //packet methods
     public static void swapItems(int start, int end) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        PlayerEntity player = client.player;
-        if (player == null) return;
+        ItemStack startItem = Logic.getItemStack(start);
+        if (startItem == null) return;
+        ItemStack endItem = Logic.getItemStack(start);
+        if (endItem == null) return;
 
-        ScreenHandler screenHandler = player.currentScreenHandler;
+        moveItem(start,ItemStack.EMPTY);
+        moveItem(end,startItem);
 
-        packetsToSend.add(new ClickSlotC2SPacket(
-                screenHandler.syncId,
-                screenHandler.getRevision(),
-                start,
-                0,
-                SlotActionType.PICKUP,
-                ItemStack.EMPTY,
-                new Int2ObjectOpenHashMap<>()
-        ));
-
-        packetsToSend.add(new ClickSlotC2SPacket(
-                screenHandler.syncId,
-                screenHandler.getRevision(),
-                end,
-                0,
-                SlotActionType.PICKUP,
-                player.getInventory().main.get(start),
-                new Int2ObjectOpenHashMap<>()
-        ));
-
-        packetsToSend.add(new ClickSlotC2SPacket(
-                screenHandler.syncId,
-                screenHandler.getRevision(),
-                start,
-                0,
-                SlotActionType.PICKUP,
-                player.getInventory().main.get(end),
-                new Int2ObjectOpenHashMap<>()
-        ));
+        //dont need if item in end slot is originally empty
+        if (endItem.getItem() == Items.AIR) return;
+        moveItem(start,endItem);
     }
+
     public static void swapUseItems(int start) {
         MinecraftClient client = MinecraftClient.getInstance();
         PlayerEntity player = client.player;
@@ -92,50 +68,31 @@ public class Packets implements ClientModInitializer {
 
         ScreenHandler screenHandler = player.currentScreenHandler;
 
+        swapItems(start,player.getInventory().selectedSlot + 36);
 
-        boolean holdingAir = player.getMainHandStack().getItem() == Items.AIR;
-        IngameChat.sendChat(String.valueOf(holdingAir));
-
-        packetsToSend.add(new ClickSlotC2SPacket(
-                screenHandler.syncId,
-                screenHandler.getRevision(),
-                start,
-                0,
-                SlotActionType.PICKUP,
-                ItemStack.EMPTY,
-                new Int2ObjectOpenHashMap<>()
-        ));
-
-        packetsToSend.add(new ClickSlotC2SPacket(
-                screenHandler.syncId,
-                screenHandler.getRevision(),
-                player.getInventory().selectedSlot + 36,
-                0,
-                SlotActionType.PICKUP,
-                player.getInventory().main.get(start),
-                new Int2ObjectOpenHashMap<>()
-        ));
-        IngameChat.sendChat(String.valueOf(player.getInventory().selectedSlot));
-
-        if (!holdingAir) {
-            packetsToSend.add(new ClickSlotC2SPacket(
-                screenHandler.syncId,
-                screenHandler.getRevision(),
-                start,
-                0,
-                SlotActionType.PICKUP,
-                player.getMainHandStack(),
-                new Int2ObjectOpenHashMap<>()
-            ));
-        }
-
+        //use item
         packetsToSend.add(new PlayerInteractItemC2SPacket(
                 Hand.MAIN_HAND,
                 0,
                 player.getYaw(),
                 player.getPitch()
         ));
-        IngameChat.sendChat("packet");
+
+        swapItems(player.getInventory().selectedSlot + 36,start);
 
     }
+
+    public static void moveItem(int slot, ItemStack holding){
+        ScreenHandler screenHandler = MinecraftClient.getInstance().player.currentScreenHandler;
+        packetsToSend.add(new ClickSlotC2SPacket(
+                screenHandler.syncId,
+                screenHandler.getRevision(),
+                slot,
+                0,
+                SlotActionType.PICKUP,
+                holding,
+                new Int2ObjectOpenHashMap<>()
+        ));
+    }
+
 }

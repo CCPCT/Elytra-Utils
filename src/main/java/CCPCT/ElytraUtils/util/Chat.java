@@ -5,8 +5,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import CCPCT.ElytraUtils.config.ModConfig;
 
-public class IngameChat {
-    public static void sendChat(String message) {
+public class Chat {
+    public static void send(String message) {
         if (ModConfig.get().chatfeedback) {
             MinecraftClient client = MinecraftClient.getInstance();
             if (client.player != null) {
@@ -15,7 +15,7 @@ public class IngameChat {
         }
     }
 
-    public static void sendColourChat(String message, String color) {
+    public static void colour(String message, String color) {
         if (ModConfig.get().chatfeedback) {
             MinecraftClient client = MinecraftClient.getInstance();
             if (client.player != null) {

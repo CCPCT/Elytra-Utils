@@ -9,29 +9,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class ModConfig {
-    public boolean autoTotem = false;
     public boolean chatfeedback = true;
-
-    public boolean customSound = true;
-    public String customSoundName = "minecraft:item.shield.break";
-    public Float customSoundVolume = 1.0f;
-
-    public boolean totemPopScreen = true;
-    public int totemPopScreenColour = 0xFF0000;
-    public int totemPopScreenAlpha = 255;
-    public int totemPopScreenDuration = 20;
-    public int totemPopScreenWidth = 100;
-
-    public int totemCountTime = 0;
-    public int totemCountx = 10;
-    public int totemCounty = 10;
-    public int totemCountColour = 0xFFFFFF;
-    public int totemCountAlpha = 255;
+    public boolean disableFireworkOnWall = true;
+    public boolean durabilityAlert = true;
+    public boolean replaceBreakingElytra = true;
+    public boolean flightOverlay = false;
+    public boolean flightIcon = false;
 
 
 
     private static final Path CONFIG_PATH = FabricLoader.getInstance()
-            .getConfigDir().resolve("totemutils-config.json");
+            .getConfigDir().resolve("elytrautils-config.json");
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
