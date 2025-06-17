@@ -50,7 +50,7 @@ public class Packets implements ClientModInitializer {
     public static void swapItems(int start, int end) {
         ItemStack startItem = Logic.getItemStack(start);
         if (startItem == null) return;
-        ItemStack endItem = Logic.getItemStack(start);
+        ItemStack endItem = Logic.getItemStack(end);
         if (endItem == null) return;
 
         moveItem(start,ItemStack.EMPTY);

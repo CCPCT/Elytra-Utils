@@ -10,6 +10,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 
 import CCPCT.ElytraUtils.util.*;
@@ -18,6 +20,7 @@ import CCPCT.ElytraUtils.config.configScreen;
 public class ElytraUtilsClient implements ClientModInitializer {
     public static KeyBinding swapElytraKey;
     public static KeyBinding configScreenKey;
+    public static KeyBinding endFlightKey;
 
     @Override
     public void onInitializeClient() {
@@ -38,18 +41,37 @@ public class ElytraUtilsClient implements ClientModInitializer {
                 "Elytra Utils"       // category in controls menu
         ));
 
+        endFlightKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "End flight", // translation key
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_SPACE,       // default key
+                "End flight"       // category in controls menu
+        ));
+
         // Register client tick listener
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (swapElytraKey.wasPressed()) {
                 // swap totem
-                Chat.send("Switching totem");
+
                 Logic.swapElytra();
-                //Packets.swapItems(9,10);
             }
 
             if (configScreenKey.wasPressed()) {
                 // open config
                 MinecraftClient.getInstance().setScreen(configScreen.getConfigScreen(MinecraftClient.getInstance().currentScreen));
+            }
+
+            if (endFlightKey.wasPressed()) {
+                // open config
+                Chat.send("pressed");
+                PlayerEntity player = MinecraftClient.getInstance().player;
+                if (player != null){
+                    if (player.isGliding()) {
+                        Chat.send("activated");
+                        Packets.moveItem(6, ItemStack.EMPTY);
+                        Packets.moveItem(6, Logic.getItemStack(38));
+                    }
+                }
             }
         });
     }

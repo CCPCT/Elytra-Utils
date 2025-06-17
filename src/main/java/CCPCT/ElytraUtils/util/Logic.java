@@ -33,7 +33,7 @@ public class Logic {
             Chat.colour("Swapping to Elytra!", "gray");
         }
 
-        Packets.swapItems(spot,38);
+        Packets.swapItems(spot,6);
     }
 
     public static int getElytraSpot() {
