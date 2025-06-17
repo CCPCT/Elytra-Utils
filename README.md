@@ -1,4 +1,5 @@
 Minecraft mod to optimise elytra experience
+
 Customisable options:
 - easy disable flight hotkey, like 'space' in bedrock edition
 - swap elytra/ chestplate hotkey
