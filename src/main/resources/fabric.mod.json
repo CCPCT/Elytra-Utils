@@ -1,26 +1,27 @@
 {
   "schemaVersion": 1,
-  "id": "totemutils",
+  "id": "elytrautils",
   "version": "${version}",
-  "name": "Totem Utils",
-  "description": "Optimise totem experience",
+  "name": "Elytra Utils",
+  "description": "Optimise elytra experience",
   "authors": ["CC PCT"],
   "contact": {
-    "repo": "https://github.com/CCPCT/TotemUtils"
+    "repo": "https://github.com/CCPCT/ElytraUtils"
   },
   "license": "GPL-3.0-or-later",
   "icon": "assets/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [
-      "CCPCT.TotemUtils.client.TotemUtilsClient"
+      "CCPCT.ElytraUtils.client.ElytraUtilsClient",
+      "CCPCT.ElytraUtils.util.Packets"
     ],
     "modmenu": [
-      "CCPCT.TotemUtils.ModMenu.ModMenu"
+      "CCPCT.ElytraUtils.ModMenu.ModMenu"
     ]
   },
   "mixins": [
-    "TotemUtils.mixin.json"
+    "ElytraUtils.mixin.json"
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",

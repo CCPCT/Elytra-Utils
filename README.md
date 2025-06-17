@@ -1,8 +1,14 @@
-Minecraft mod to optimise totem experience in pvp
-Options:
-- customise self totem pop sound
-- hot key to equip totem
-- option to autototem (not recommanded in pvp servers)
+Minecraft mod to optimise elytra experience
+Customisable options:
+- easy disable flight hotkey, like 'space' in bedrock edition
+- swap elytra/ chestplate hotkey
+- preferred slot for elytra swap
+- disable placing firework in flight, but boost instead
+- firework hotkey, triggered in flight only
+- flight icon/ tip
+- alert when elytra have low durability
+- auto replace elytra when old elytra breaks
 
-To download newest version, either visit modrinth: https://modrinth.com/mod/totemutils
-or go to release: https://github.com/CCPCT/Totem-Utils/releases
+To download latest version, visit 
+[modrinth](https://modrinth.com/mod/elytrautils) or [release](https://github.com/CCPCT/Elytra-Utils/releases)
+~~or compile urself with the source code :)~~

@@ -1,13 +1,11 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "CCPCT.TotemUtils.mixin",
+  "package": "CCPCT.ElytraUtils.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "onTotemPopMixin"
   ],
   "client": [
-    "RenderOverlay$InGameHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1

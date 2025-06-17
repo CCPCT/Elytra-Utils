@@ -1,4 +1,4 @@
-package CCPCT.TotemUtils.config;
+package CCPCT.ElytraUtils.config;
 
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;

@@ -1,9 +1,9 @@
-package CCPCT.TotemUtils.util;
+package CCPCT.ElytraUtils.util;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import CCPCT.TotemUtils.config.ModConfig;
+import CCPCT.ElytraUtils.config.ModConfig;
 
 public class IngameChat {
     public static void sendChat(String message) {

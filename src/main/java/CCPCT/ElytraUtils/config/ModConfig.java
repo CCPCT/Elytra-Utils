@@ -1,4 +1,4 @@
-package CCPCT.TotemUtils.config;
+package CCPCT.ElytraUtils.config;
 
 import net.fabricmc.loader.api.FabricLoader;
 import com.google.gson.Gson;
