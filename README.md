@@ -4,7 +4,8 @@ Customisable options:
 - swap elytra/ chestplate hotkey
 - boost instead of placing firework on block in flight
 - firework hotkey, triggered in flight only
-- flight icon/ overlay
+- flight overlay
+- firework rocket count
 - alert when elytra have low durability
 - auto replace elytra when old elytra breaks
 

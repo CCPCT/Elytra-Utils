@@ -12,9 +12,18 @@ public class ModConfig {
     public boolean chatfeedback = true;
     public boolean disableFireworkOnWall = true;
     public boolean durabilityAlert = true;
+    public boolean middleClickQuickFirework = true;
     public boolean replaceBreakingElytra = true;
+    public boolean debug = false;
+
     public boolean flightOverlay = false;
-    public boolean flightIcon = false;
+    public int flightOverlayColour = 0x15FFFFFF;
+    public int flightOverlayWidth = 100;
+
+    public boolean fireworkCount = false;
+    public int fireworkCountColour = 0x000000;
+    public int fireworkCountx = 20;
+    public int fireworkCounty = 20;
 
 
 

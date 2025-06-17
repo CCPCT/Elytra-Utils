@@ -23,4 +23,13 @@ public class Chat {
             }
         }
     }
+
+    public static void debug(String message) {
+        if (ModConfig.get().debug) {
+            MinecraftClient client = MinecraftClient.getInstance();
+            if (client.player != null) {
+                client.player.sendMessage(Text.literal(message), false);
+            }
+        }
+    }
 }
