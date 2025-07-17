@@ -18,7 +18,7 @@ public class RenderOverlay {
         @Inject(method = "render", at = @At("TAIL"))
         private void onRender(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
             MinecraftClient client = MinecraftClient.getInstance();
-            if (ModConfig.get().flightOverlay && client.player != null && client.player.isGliding()) {
+            if (ModConfig.get().flightOverlay && client.player != null && client.player.isFallFlying()) {
                 int width = client.getWindow().getScaledWidth();
                 int height = client.getWindow().getScaledHeight();
                 int centerX = width / 2;

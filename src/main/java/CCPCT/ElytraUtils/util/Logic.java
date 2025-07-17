@@ -113,23 +113,9 @@ public class Logic {
         else return player.getInventory().main.get(slot);
     }
 
-    public static int invToProtocolSlot(int slot,int invType){
-        // invType -> 0:main, 1:armour, 2:offHand
-        if (invType==2) return 45;
-        if (invType==1) return 8-slot;
-        if (invType==0){
-            if (slot<=8) {
-                return slot + 36;
-            } else {
-                return slot;
-            }
-        }
-        return -1;
-    }
-
     public static void quickFirework(){
         PlayerEntity player = MinecraftClient.getInstance().player;
-        if (player == null || !player.isGliding()) return;
+        if (player == null || !player.isFallFlying()) return;
         int slot = getItemSpot(Items.FIREWORK_ROCKET);
         if (slot == -1) {
             Chat.colour("No firework in inventory!", "red");

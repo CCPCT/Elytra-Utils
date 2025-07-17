@@ -83,7 +83,7 @@ public class ElytraUtilsClient implements ClientModInitializer {
             }
 
 
-            gliding = client.player.isGliding();
+            gliding = client.player.isFallFlying();
             jumpKeyDown = client.options.jumpKey.isPressed();
             if (endFlightKey.isDefault()&&(lastGliding && gliding && jumpKeyDown && !lastJumpKeyDown)||endFlightKey.wasPressed()) {
                 Chat.send("Ended flight");
@@ -129,7 +129,7 @@ public class ElytraUtilsClient implements ClientModInitializer {
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (entity instanceof ArmorStandEntity &&
                     world.isClient() &&
-                    player.isGliding() &&
+                    player.isFallFlying() &&
                     player.getMainHandStack().getItem() == Items.FIREWORK_ROCKET &&
                     ModConfig.get().disableFireworkOnWall) {
                 Chat.send("Boosted");

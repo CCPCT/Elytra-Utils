@@ -22,7 +22,7 @@ public class FireworkOnWall {
     private void disableFireworkOnWall(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
         Chat.debug("firework on wall mixin called");
         if (player != null &&
-                player.isGliding() &&
+                player.isFallFlying() &&
                 player.getMainHandStack().getItem() == Items.FIREWORK_ROCKET &&
                 ModConfig.get().disableFireworkOnWall) {
             Chat.send("Boosted");
@@ -34,7 +34,7 @@ public class FireworkOnWall {
     private void disableFireworkOnEntity(PlayerEntity player, Entity entity, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         Chat.debug("firework on entity mixin called");
         if (player != null &&
-                player.isGliding() &&
+                player.isFallFlying() &&
                 player.getMainHandStack().getItem() == Items.FIREWORK_ROCKET &&
                 ModConfig.get().disableFireworkOnWall) {
             Chat.send("Boosted");
