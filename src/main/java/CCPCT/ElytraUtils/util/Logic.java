@@ -15,7 +15,7 @@ public class Logic {
         PlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return;
         int spot;
-        ItemStack stack = player.getInventory().armor.get(2);
+        ItemStack stack = player.getInventory().getStack(38);
         if (!stack.isEmpty() && stack.getItem() == Items.ELYTRA && stack.getMaxDamage()-stack.getDamage()>=10){
             //elytra equipped
             spot = getChestplateSpot();
@@ -43,8 +43,8 @@ public class Logic {
         PlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return -1;
 
-        for (int i = 0; i < player.getInventory().main.size(); i++) {
-            ItemStack stack = player.getInventory().main.get(i);
+        for (int i = 0; i < PlayerInventory.MAIN_SIZE; i++) {
+            ItemStack stack = player.getInventory().getStack(i);
             if (!stack.isEmpty() && stack.getItem() == Items.ELYTRA && stack.getMaxDamage()-stack.getDamage()>=10) {
                 return i;
             }
@@ -70,17 +70,17 @@ public class Logic {
         int bestIndex = 0;
         int bestValue = 0;
 
-        for (int i = 9; i < player.getInventory().main.size(); i++) {
-            ItemStack stack = player.getInventory().main.get(i);
-            int currentValue = chestplateValues.getOrDefault(player.getInventory().main.get(i).getItem(), 0);
+        for (int i = 9; i < PlayerInventory.MAIN_SIZE; i++) {
+            ItemStack stack = player.getInventory().getStack(i);
+            int currentValue = chestplateValues.getOrDefault(player.getInventory().getStack(i).getItem(), 0);
             if (currentValue > bestValue && (stack.getMaxDamage()-stack.getDamage()>=10 || stack.getItem() == Items.AIR)){
                 bestValue = currentValue;
                 bestIndex = i;
             }
         }
         for (int i = 0; i < 9; i++) {
-            ItemStack stack = player.getInventory().main.get(i);
-            int currentValue = chestplateValues.getOrDefault(player.getInventory().main.get(i).getItem(), 0);
+            ItemStack stack = player.getInventory().getStack(i);
+            int currentValue = chestplateValues.getOrDefault(player.getInventory().getStack(i).getItem(), 0);
             if (currentValue > bestValue && (stack.getMaxDamage()-stack.getDamage()>=10 || stack.getItem() == Items.AIR)){
                 bestValue = currentValue;
                 bestIndex = i;
@@ -95,8 +95,8 @@ public class Logic {
     public static int getItemSpot(Item item){
         PlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return -1;
-        for (int i = 0; i < player.getInventory().main.size(); i++) {
-            if (player.getInventory().main.get(i).getItem() == item){
+        for (int i = 0; i < PlayerInventory.MAIN_SIZE; i++) {
+            if (player.getInventory().getStack(i).getItem() == item){
                 return i;
             }
         }
@@ -107,10 +107,10 @@ public class Logic {
         // input protocol number
         PlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return null;
-        if (slot == 45) return player.getInventory().offHand.getFirst();
-        else if (slot <= 8) return player.getInventory().armor.get(8-slot);
-        else if (slot >= 36) return player.getInventory().main.get(slot-36);
-        else return player.getInventory().main.get(slot);
+        if (slot == 45) return player.getOffHandStack();
+        else if (slot <= 8) return player.getInventory().getStack(8-slot+36);
+        else if (slot >= 36) return player.getInventory().getStack(slot-36);
+        else return player.getInventory().getStack(slot);
     }
 
     public static int invToProtocolSlot(int slot,int invType){
@@ -144,13 +144,13 @@ public class Logic {
         if (player == null) return -1;
         PlayerInventory inventory = player.getInventory();
         int count = 0;
-        for (int i = 0; i < player.getInventory().main.size(); i++) {
-            if (inventory.main.get(i).getItem() == item){
-                count += inventory.main.get(i).getCount();
+        for (int i = 0; i < PlayerInventory.MAIN_SIZE; i++) {
+            if (inventory.getStack(i).getItem() == item){
+                count += inventory.getStack(i).getCount();
             }
         }
-        if (inventory.offHand.getFirst().getItem() == item){
-            count += inventory.offHand.getFirst().getCount();
+        if (player.getOffHandStack().getItem() == item){
+            count += player.getOffHandStack().getCount();
         }
         return count;
     }

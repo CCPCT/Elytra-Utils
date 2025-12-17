@@ -18,6 +18,8 @@ import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.screen.sync.ComponentChangesHash;
+import net.minecraft.screen.sync.ItemStackHash;
 import net.minecraft.util.Hand;
 
 
@@ -75,10 +77,10 @@ public class Packets implements ClientModInitializer {
         if (start<=8) {
             selectHotbarSlot(start,false);
             useItem(false);
-            selectHotbarSlot(player.getInventory().selectedSlot,false);
+            selectHotbarSlot(player.getInventory().getSelectedSlot(),false);
         } else {
             ItemStack startItem = Logic.getItemStack(start);
-            int end = player.getInventory().selectedSlot + 36;
+            int end = player.getInventory().getSelectedSlot() + 36;
             ItemStack endItem = Logic.getItemStack(end);
 
             if (startItem==null || endItem == null) return;
@@ -95,15 +97,16 @@ public class Packets implements ClientModInitializer {
     public static void clickItem(int slot, ItemStack holding, boolean delay) {
         if (MinecraftClient.getInstance().player == null) return;
         ScreenHandler screenHandler = MinecraftClient.getInstance().player.currentScreenHandler;
-            sendPacket(new ClickSlotC2SPacket(
-                    screenHandler.syncId,
-                    screenHandler.getRevision(),
-                    slot,
-                    0,
-                    SlotActionType.PICKUP,
-                    holding,
-                    new Int2ObjectOpenHashMap<>()
-            ),delay);
+        ComponentChangesHash.ComponentHasher hasher = MinecraftClient.getInstance().getNetworkHandler().getComponentHasher();
+        sendPacket(new ClickSlotC2SPacket(
+                screenHandler.syncId,
+                screenHandler.getRevision(),
+                (short)slot,
+                (byte)0,
+                SlotActionType.PICKUP,
+                new Int2ObjectOpenHashMap<>(),
+                ItemStackHash.fromItemStack(holding,hasher)
+        ),delay);
     }
 
     public static void useItem(boolean delay){

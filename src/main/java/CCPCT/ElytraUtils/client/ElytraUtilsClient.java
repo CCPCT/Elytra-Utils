@@ -109,7 +109,7 @@ public class ElytraUtilsClient implements ClientModInitializer {
             lastFirework = firework;
 
             if (ModConfig.get().durabilityAlert){
-                ItemStack item = client.player.getInventory().armor.get(2);
+                ItemStack item = client.player.getInventory().getStack(38);
                 if (item.getItem()==Items.ELYTRA && item.getMaxDamage()-item.getDamage()<=9){
                     if (ModConfig.get().replaceBreakingElytra&&Logic.getElytraSpot() != -1){
                         Chat.colour("Replacing breaking elytra","yellow");
