@@ -4,7 +4,7 @@ plugins {
 }
 
 def targetVersion = project.hasProperty('targetVersion') ? project.getProperty('targetVersion') : '1.21.6'
-def versionFile = file("Versionfiles/${targetVersion}.properties")
+def versionFile = file("versions/${targetVersion}.properties")
 
 if (versionFile.exists()) {
     def props = new Properties()
@@ -36,7 +36,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
     modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
     modApi("me.shedaniel.cloth:cloth-config-fabric:${project.clothconfig_version}") {
@@ -48,12 +48,14 @@ processResources {
     inputs.property "version", project.version
     inputs.property "minecraft_version", project.minecraft_version
     inputs.property "loader_version", project.loader_version
+    inputs.property "minecraft_range", project.minecraft_range
     filteringCharset "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand "version": project.version,
                 "minecraft_version": project.minecraft_version,
-                "loader_version": project.loader_version
+                "loader_version": project.loader_version,
+                "minecraft_range": project.minecraft_range
     }
 }
 

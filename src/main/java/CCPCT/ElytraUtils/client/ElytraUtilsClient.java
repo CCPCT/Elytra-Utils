@@ -1,26 +1,25 @@
 package CCPCT.ElytraUtils.client;
 
-import static CCPCT.ElytraUtils.config.ModConfig.load;
-
 import CCPCT.ElytraUtils.config.ModConfig;
+import CCPCT.ElytraUtils.config.configScreen;
+import CCPCT.ElytraUtils.mixin.PlayerInventoryMixin;
+import CCPCT.ElytraUtils.util.Chat;
+import CCPCT.ElytraUtils.util.Logic;
+import CCPCT.ElytraUtils.util.PacketHandler;
 import net.fabricmc.api.ClientModInitializer;
-
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.ActionResult;
 import org.lwjgl.glfw.GLFW;
 
-import CCPCT.ElytraUtils.util.*;
-import CCPCT.ElytraUtils.config.configScreen;
+import static CCPCT.ElytraUtils.config.ModConfig.load;
 
 public class ElytraUtilsClient implements ClientModInitializer {
     public static KeyBinding swapElytraKey;
@@ -88,9 +87,9 @@ public class ElytraUtilsClient implements ClientModInitializer {
             if (endFlightKey.isDefault()&&(lastGliding && gliding && jumpKeyDown && !lastJumpKeyDown)||endFlightKey.wasPressed()) {
                 Chat.send("Ended flight");
 
-                Packets.sendPacket(null,true);
-                Packets.clickItem(6, Logic.getItemStack(6),true);
-                Packets.clickItem(6, ItemStack.EMPTY,false);
+                PacketHandler.Packet.empty();
+                PacketHandler. clickItem(6,true);
+                PacketHandler.clickItem(6,false);
 
 
 
@@ -133,7 +132,7 @@ public class ElytraUtilsClient implements ClientModInitializer {
                     player.getMainHandStack().getItem() == Items.FIREWORK_ROCKET &&
                     ModConfig.get().disableFireworkOnWall) {
                 Chat.send("Boosted");
-                Packets.useItem(false);
+                PacketHandler.useItem();
                 return ActionResult.SUCCESS;
             }
             return ActionResult.PASS; // allow normal processing

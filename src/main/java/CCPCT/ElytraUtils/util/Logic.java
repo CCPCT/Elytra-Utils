@@ -1,12 +1,12 @@
 package CCPCT.ElytraUtils.util;
 
+import CCPCT.ElytraUtils.mixin.PlayerInventoryMixin;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-
 
 import java.util.Map;
 
@@ -36,7 +36,7 @@ public class Logic {
         if (spot < 9){
             spot+=36;
         }
-        Packets.swapItems(spot,6);
+        PacketHandler.swapItems(spot,6);
     }
 
     public static int getElytraSpot() {
@@ -136,7 +136,7 @@ public class Logic {
             return;
         }
         Chat.send("Boosting");
-        Packets.swapUseItems(slot);
+        PacketHandler.swapUseItems(slot);
     }
 
     public static int getItemCount(Item item){

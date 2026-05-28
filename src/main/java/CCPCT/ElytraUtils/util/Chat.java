@@ -1,9 +1,9 @@
 package CCPCT.ElytraUtils.util;
 
+import CCPCT.ElytraUtils.config.ModConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import CCPCT.ElytraUtils.config.ModConfig;
 
 public class Chat {
     public static <T> void send(T message) {
