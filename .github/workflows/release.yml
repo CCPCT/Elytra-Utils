@@ -1,0 +1,79 @@
+name: release
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag for the release'
+        required: true
+        default: 'v2.'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Define your versions here
+        mc_version: ["26.1"]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      - name: Build Mod
+        # Uses the matrix variable for the target flag
+        run: ./gradlew clean build --no-daemon -Ptarget=${{ matrix.mc_version }}
+        env:
+          GRADLE_OPTS: -Xmx4G -XX:+UseParallelGC
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          # Unique name for each version's jar
+          name: mod-jar-${{ matrix.mc_version }}
+          path: build/libs/*.jar
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-jars
+          merge-multiple: true
+
+      - name: Get Commit Message
+        id: commit_message
+        run: |
+          TARGET_REF="${{ github.event.inputs.tag_name || github.ref_name }}"
+          {
+            echo "msg<<EOF"
+            git log -1 "$TARGET_REF" --pretty=%B
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "${{ github.event.inputs.tag_name || github.ref_name }} for 1.26+"
+          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
+          body: ${{ steps.commit_message.outputs.msg }}
+          # Points to the folder where all parallel jars were collected
+          files: all-jars/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

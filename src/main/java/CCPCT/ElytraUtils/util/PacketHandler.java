@@ -1,16 +1,14 @@
 package CCPCT.ElytraUtils.util;
 
-import CCPCT.ElytraUtils.mixin.PlayerInventoryMixin;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.util.Hand;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -40,27 +38,27 @@ public class PacketHandler implements ClientModInitializer {
     }
 
     private static void sendPacket(Packet packet) {
-        ClientPlayerInteractionManager interactionManager = MinecraftClient.getInstance().interactionManager;
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        MultiPlayerGameMode interactionManager = Minecraft.getInstance().gameMode;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null || interactionManager == null) return;
-        interactionManager.clickSlot(player.currentScreenHandler.syncId, packet.slot, packet.button, packet.type, player);
+        interactionManager.handleContainerInput(player.containerMenu.containerId, packet.slot, packet.button, packet.type, player);
     }
 
     public static boolean isQueueEmpty(){
         return packetsToSend.isEmpty();
     }
 
-    public record Packet(int slot, int button, SlotActionType type) {
+    public record Packet(int slot, int button, ContainerInput type) {
         // Helper constructor for a standard slot click
-        public static void click(int slot, int button, SlotActionType type) {
+        public static void click(int slot, int button, ContainerInput type) {
             packetsToSend.add(new Packet(slot, button, type));
         }
 
-        public static void clickNow(int slot, int button, SlotActionType type) {
-            ClientPlayerInteractionManager interactionManager = MinecraftClient.getInstance().interactionManager;
-            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        public static void clickNow(int slot, int button, ContainerInput type) {
+            MultiPlayerGameMode interactionManager = Minecraft.getInstance().gameMode;
+            LocalPlayer player = Minecraft.getInstance().player;
             if (player == null) return;
-            interactionManager.clickSlot(player.currentScreenHandler.syncId, slot, button, type, player);
+            interactionManager.handleContainerInput(player.containerMenu.containerId, slot, button, type, player);
         }
 
         // update
@@ -89,11 +87,11 @@ public class PacketHandler implements ClientModInitializer {
     }
 
     public static void swapUseItems(int start) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        PlayerEntity player = client.player;
+        Minecraft client = Minecraft.getInstance();
+        LocalPlayer player = client.player;
         if (player == null) return;
 
-        int selectedSlot = ((PlayerInventoryMixin)player.getInventory()).getSelectedSlot();
+        int selectedSlot = player.getInventory().getSelectedSlot();
 
         if (start<=8) {
             selectHotbarSlot(start);
@@ -108,7 +106,7 @@ public class PacketHandler implements ClientModInitializer {
             clickItem(start,false);
             clickItem(end,false);
             useItem();
-            startItem.decrement(1);
+            startItem.setCount(startItem.getCount()-1);
             clickItem(end,false);
             clickItem(start,false);
         }
@@ -117,18 +115,18 @@ public class PacketHandler implements ClientModInitializer {
 
     public static void clickItem(int slot, boolean delay) {
         if (delay) {
-            Packet.click(slot, 0, SlotActionType.PICKUP);
+            Packet.click(slot, 0, ContainerInput.PICKUP);
         } else {
-            Packet.clickNow(slot, 0, SlotActionType.PICKUP);
+            Packet.clickNow(slot, 0, ContainerInput.PICKUP);
         }
     }
 
     public static void useItem(){
-        PlayerEntity player = MinecraftClient.getInstance().player;
-        ClientPlayerInteractionManager interactionManager = MinecraftClient.getInstance().interactionManager;
+        LocalPlayer player = Minecraft.getInstance().player;
+        MultiPlayerGameMode interactionManager = Minecraft.getInstance().gameMode;
 
         if (player == null) return;
-        interactionManager.interactItem(player,Hand.MAIN_HAND);
+        interactionManager.useItem(player, InteractionHand.MAIN_HAND);
 
         Chat.debug("used item");
     }
@@ -136,8 +134,8 @@ public class PacketHandler implements ClientModInitializer {
     public static void selectHotbarSlot(int slot) {
         // use protocol number
         if (slot < 0 || slot > 8) return; // validate slot
-        PlayerEntity player = MinecraftClient.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player==null || player.getInventory()==null) return;
-        ((PlayerInventoryMixin)player.getInventory()).setSelectedSlot(slot);
+        player.getInventory().setSelectedSlot(slot);
     }
 }

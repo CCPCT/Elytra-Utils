@@ -1,26 +1,25 @@
 package CCPCT.ElytraUtils.util;
 
-import CCPCT.ElytraUtils.mixin.PlayerInventoryMixin;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.Map;
 
 public class Logic {
     public static void swapElytra() {
-        PlayerEntity player = MinecraftClient.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
         int spot;
-        ItemStack stack = player.getInventory().getStack(38);
-        if (!stack.isEmpty() && stack.getItem() == Items.ELYTRA && stack.getMaxDamage()-stack.getDamage()>=10){
+        ItemStack stack = player.getInventory().getItem(38);
+        if (!stack.isEmpty() && stack.getItem() == Items.ELYTRA && stack.getMaxDamage()-stack.getDamageValue()>=10){
             //elytra equipped
             spot = getChestplateSpot();
             if (spot == -1){
-                Chat.colour("No empty spot!", "red");
+                Chat.send(Chat.getCode("yellow")+"No empty spot!");
                 return;
             }
             Chat.send("Swapping to Chestplate!");
@@ -28,7 +27,7 @@ public class Logic {
             //chestplate equipped
             spot = getElytraSpot();
             if (spot == -1){
-                Chat.colour("No elytra!","red");
+                Chat.send(Chat.getCode("yellow")+"No elytra!");
                 return;
             }
             Chat.send("Swapping to Elytra!");
@@ -40,12 +39,12 @@ public class Logic {
     }
 
     public static int getElytraSpot() {
-        PlayerEntity player = MinecraftClient.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return -1;
 
-        for (int i = 0; i < PlayerInventory.MAIN_SIZE; i++) {
-            ItemStack stack = player.getInventory().getStack(i);
-            if (!stack.isEmpty() && stack.getItem() == Items.ELYTRA && stack.getMaxDamage()-stack.getDamage()>=10) {
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (!stack.isEmpty() && stack.getItem() == Items.ELYTRA && stack.getMaxDamage()-stack.getDamageValue()>=10) {
                 return i;
             }
         }
@@ -63,25 +62,25 @@ public class Logic {
                 Items.NETHERITE_CHESTPLATE, 7
         );
 
-        PlayerEntity player = MinecraftClient.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return -1;
 
         // default assume inventory full without chestplate, use the first item in inventory
         int bestIndex = 0;
         int bestValue = 0;
 
-        for (int i = 9; i < PlayerInventory.MAIN_SIZE; i++) {
-            ItemStack stack = player.getInventory().getStack(i);
-            int currentValue = chestplateValues.getOrDefault(player.getInventory().getStack(i).getItem(), 0);
-            if (currentValue > bestValue && (stack.getMaxDamage()-stack.getDamage()>=10 || stack.getItem() == Items.AIR)){
+        for (int i = 9; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            int currentValue = chestplateValues.getOrDefault(player.getInventory().getItem(i).getItem(), 0);
+            if (currentValue > bestValue && (stack.getMaxDamage()-stack.getDamageValue()>=10 || stack.getItem() == Items.AIR)){
                 bestValue = currentValue;
                 bestIndex = i;
             }
         }
         for (int i = 0; i < 9; i++) {
-            ItemStack stack = player.getInventory().getStack(i);
-            int currentValue = chestplateValues.getOrDefault(player.getInventory().getStack(i).getItem(), 0);
-            if (currentValue > bestValue && (stack.getMaxDamage()-stack.getDamage()>=10 || stack.getItem() == Items.AIR)){
+            ItemStack stack = player.getInventory().getItem(i);
+            int currentValue = chestplateValues.getOrDefault(player.getInventory().getItem(i).getItem(), 0);
+            if (currentValue > bestValue && (stack.getMaxDamage()-stack.getDamageValue()>=10 || stack.getItem() == Items.AIR)){
                 bestValue = currentValue;
                 bestIndex = i;
             }
@@ -93,10 +92,10 @@ public class Logic {
     }
 
     public static int getItemSpot(Item item){
-        PlayerEntity player = MinecraftClient.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return -1;
-        for (int i = 0; i < PlayerInventory.MAIN_SIZE; i++) {
-            if (player.getInventory().getStack(i).getItem() == item){
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            if (player.getInventory().getItem(i).getItem() == item){
                 return i;
             }
         }
@@ -105,12 +104,12 @@ public class Logic {
 
     public static ItemStack getItemStack(int slot){
         // input protocol number
-        PlayerEntity player = MinecraftClient.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return null;
-        if (slot == 45) return player.getOffHandStack();
-        else if (slot <= 8) return player.getInventory().getStack(8-slot+36);
-        else if (slot >= 36) return player.getInventory().getStack(slot-36);
-        else return player.getInventory().getStack(slot);
+        if (slot == 45) return player.getOffhandItem();
+        else if (slot <= 8) return player.getInventory().getItem(8-slot+36);
+        else if (slot >= 36) return player.getInventory().getItem(slot-36);
+        else return player.getInventory().getItem(slot);
     }
 
     public static int invToProtocolSlot(int slot,int invType){
@@ -128,11 +127,11 @@ public class Logic {
     }
 
     public static void quickFirework(){
-        PlayerEntity player = MinecraftClient.getInstance().player;
-        if (player == null || !player.isGliding()) return;
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null || !player.isFallFlying()) return;
         int slot = getItemSpot(Items.FIREWORK_ROCKET);
         if (slot == -1) {
-            Chat.colour("No firework in inventory!", "red");
+            Chat.send(Chat.getCode("yellow")+"No firework in inventory!");
             return;
         }
         Chat.send("Boosting");
@@ -140,17 +139,17 @@ public class Logic {
     }
 
     public static int getItemCount(Item item){
-        PlayerEntity player = MinecraftClient.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return -1;
-        PlayerInventory inventory = player.getInventory();
+        Inventory inventory = player.getInventory();
         int count = 0;
-        for (int i = 0; i < PlayerInventory.MAIN_SIZE; i++) {
-            if (inventory.getStack(i).getItem() == item){
-                count += inventory.getStack(i).getCount();
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            if (inventory.getItem(i).getItem() == item){
+                count += inventory.getItem(i).getCount();
             }
         }
-        if (player.getOffHandStack().getItem() == item){
-            count += player.getOffHandStack().getCount();
+        if (player.getOffhandItem().getItem() == item){
+            count += player.getOffhandItem().getCount();
         }
         return count;
     }

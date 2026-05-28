@@ -2,30 +2,36 @@ package CCPCT.ElytraUtils.client;
 
 import CCPCT.ElytraUtils.config.ModConfig;
 import CCPCT.ElytraUtils.config.configScreen;
-import CCPCT.ElytraUtils.mixin.PlayerInventoryMixin;
 import CCPCT.ElytraUtils.util.Chat;
 import CCPCT.ElytraUtils.util.Logic;
 import CCPCT.ElytraUtils.util.PacketHandler;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.ActionResult;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.lwjgl.glfw.GLFW;
 
 import static CCPCT.ElytraUtils.config.ModConfig.load;
 
 public class ElytraUtilsClient implements ClientModInitializer {
-    public static KeyBinding swapElytraKey;
-    public static KeyBinding configScreenKey;
-    public static KeyBinding endFlightKey;
-    public static KeyBinding quickFireworkKey;
+    final public static String MODID = "elytrautils";
+    final public static KeyMapping.Category KEYBIND_CAT = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MODID, "keymap"));
+    public static KeyMapping swapElytraKey;
+    public static KeyMapping configScreenKey;
+    public static KeyMapping endFlightKey;
+    public static KeyMapping quickFireworkKey;
     private static boolean lastJumpKeyDown = false;
     private static boolean jumpKeyDown = false;
     private static boolean lastGliding = false;
@@ -38,33 +44,33 @@ public class ElytraUtilsClient implements ClientModInitializer {
     public void onInitializeClient() {
 
         load();
-        // Register the keybinding
-        swapElytraKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "Swap elytra", // translation key
-                InputUtil.Type.KEYSYM,
+        // Register the KeyMapping
+        swapElytraKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "elytrautils:key.swap_elytra", // translation key
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_G,       // default key
-                "Elytra Utils"       // category in controls menu
+                KEYBIND_CAT      // category in controls menu
         ));
 
-        configScreenKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "Elytra Utils Config screen", // translation key
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_H,       // default key
-                "Elytra Utils"       // category in controls menu
-        ));
-
-        endFlightKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "End flight", // translation key
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_SPACE,       // default key
-                "Elytra Utils"       // category in controls menu
-        ));
-
-        quickFireworkKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "Quick firework", // translation key
-                InputUtil.Type.MOUSE,
+        configScreenKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "elytrautils:key.config_menu", // translation key
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_DONT_CARE,       // default key
-                "Elytra Utils"       // category in controls menu
+                KEYBIND_CAT      // category in controls menu
+        ));
+
+        endFlightKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "elytrautils:key.end_flight", // translation key
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_SPACE,       // default key
+                KEYBIND_CAT      // category in controls menu
+        ));
+
+        quickFireworkKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "elytrautils:key.quick_firework", // translation key
+                InputConstants.Type.MOUSE,
+                GLFW.GLFW_MOUSE_BUTTON_MIDDLE,       // default key
+                KEYBIND_CAT      // category in controls menu
         ));
 
         // Register client tick listener
@@ -73,49 +79,43 @@ public class ElytraUtilsClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
             // swap totem
-            if (swapElytraKey.wasPressed()) {
+            if (swapElytraKey.isDown()) {
                 Logic.swapElytra();
             }
             // open config
-            if (configScreenKey.wasPressed()) {
-                MinecraftClient.getInstance().setScreen(configScreen.getConfigScreen(MinecraftClient.getInstance().currentScreen));
+            if (configScreenKey.isDown()) {
+                Minecraft.getInstance().setScreen(configScreen.getConfigScreen(Minecraft.getInstance().screen));
             }
 
-
-            gliding = client.player.isGliding();
-            jumpKeyDown = client.options.jumpKey.isPressed();
-            if (endFlightKey.isDefault()&&(lastGliding && gliding && jumpKeyDown && !lastJumpKeyDown)||endFlightKey.wasPressed()) {
+            gliding = client.player.isFallFlying();
+            jumpKeyDown = endFlightKey.isDown();
+            if (lastGliding && gliding && jumpKeyDown && !lastJumpKeyDown) {
                 Chat.send("Ended flight");
 
                 PacketHandler.Packet.empty();
-                PacketHandler. clickItem(6,true);
-                PacketHandler.clickItem(6,false);
-
-
+                PacketHandler.clickItem(6, true);
+                PacketHandler.clickItem(6, false);
 
             }
             lastJumpKeyDown = jumpKeyDown;
             lastGliding = gliding;
 
-            firework = client.options.pickItemKey.isPressed();
-            if (ModConfig.get().middleClickQuickFirework) {
-                if (firework && !lastFirework) {
-                    Logic.quickFirework();
-                }
-            } else if (quickFireworkKey.wasPressed()){
+            firework = quickFireworkKey.isDown();
+            if (firework && !lastFirework) {
                 Logic.quickFirework();
             }
+
             lastFirework = firework;
 
-            if (ModConfig.get().durabilityAlert){
-                ItemStack item = client.player.getInventory().getStack(38);
-                if (item.getItem()==Items.ELYTRA && item.getMaxDamage()-item.getDamage()<=9){
-                    if (ModConfig.get().replaceBreakingElytra&&Logic.getElytraSpot() != -1){
-                        Chat.colour("Replacing breaking elytra","yellow");
+            if (ModConfig.get().durabilityAlert) {
+                ItemStack item = client.player.getInventory().getItem(38);
+                if (item.getItem() == Items.ELYTRA && item.getMaxDamage() - item.getDamageValue() <= 9) {
+                    if (ModConfig.get().replaceBreakingElytra && Logic.getElytraSpot() != -1) {
+                        Chat.send(Chat.getCode("yellow") + "Replacing breaking elytra");
                         Logic.swapElytra();
                         alerted = true;
                     } else if (!alerted) {
-                        Chat.colour("Elytra breaking!", "red");
+                        Chat.send(Chat.getCode("red") + "Elytra breaking!");
                         alerted = true;
                     }
                 } else {
@@ -126,17 +126,46 @@ public class ElytraUtilsClient implements ClientModInitializer {
 
         // special case for armor stands cus its unique
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (entity instanceof ArmorStandEntity &&
-                    world.isClient() &&
-                    player.isGliding() &&
-                    player.getMainHandStack().getItem() == Items.FIREWORK_ROCKET &&
+            if (entity instanceof ArmorStand &&
+                    world.isClientSide() &&
+                    player.isFallFlying() &&
+                    player.getMainHandItem().getItem() == Items.FIREWORK_ROCKET &&
                     ModConfig.get().disableFireworkOnWall) {
-                Chat.send("Boosted");
+                Chat.send("Boosted from armourstand");
                 PacketHandler.useItem();
-                return ActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
-            return ActionResult.PASS; // allow normal processing
+            return InteractionResult.PASS; // allow normal processing
         });
+
+        HudElementRegistry.attachElementBefore(VanillaHudElements.CROSSHAIR, Identifier.fromNamespaceAndPath(MODID, "overlay"),
+                ((GuiGraphicsExtractor guiGraphicsExtractor, DeltaTracker deltaTracker) -> {
+                    Minecraft client = Minecraft.getInstance();
+                    if (ModConfig.get().flightOverlay && client.player != null && client.player.isFallFlying()) {
+                        int width = client.getWindow().getGuiScaledWidth();
+                        int height = client.getWindow().getGuiScaledHeight();
+                        int centerX = width / 2;
+                        int centerY = height / 2;
+                        int holeHeight = height - ModConfig.get().flightOverlayWidth;
+                        int holeWidth = width - ModConfig.get().flightOverlayWidth;
+                        // Draw top of screen to above the hole
+                        guiGraphicsExtractor.fill(0, 0, width, centerY - holeHeight / 2, ModConfig.get().flightOverlayColour);
+
+                        // Draw bottom of screen to below the hole
+                        guiGraphicsExtractor.fill(0, centerY + holeHeight / 2, width, height, ModConfig.get().flightOverlayColour);
+
+                        // Draw left of screen to left of hole
+                        guiGraphicsExtractor.fill(0, centerY - holeHeight / 2, centerX - holeWidth / 2, centerY + holeHeight / 2, ModConfig.get().flightOverlayColour);
+
+                        // Draw right of hole to end of screen
+                        guiGraphicsExtractor.fill(centerX + holeWidth / 2, centerY - holeHeight / 2, width, centerY + holeHeight / 2, ModConfig.get().flightOverlayColour);
+                    }
+                    if (ModConfig.get().fireworkCount && client.player.isFallFlying()) {
+                        int argb = ModConfig.get().fireworkCountColour;
+                        guiGraphicsExtractor.text(client.font, String.valueOf(Logic.getItemCount(Items.FIREWORK_ROCKET)), ModConfig.get().fireworkCountx, ModConfig.get().fireworkCounty, argb, false);
+                    }
+                })
+        );
     }
 }
 

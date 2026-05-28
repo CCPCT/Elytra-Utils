@@ -24,10 +24,10 @@
     "ElytraUtils.mixin.json"
   ],
   "depends": {
-    "fabricloader": ">=${loader_version}",
-    "fabric": "*",
+    "fabric-api": "*",
+    "fabricloader": "*",
     "minecraft": "${minecraft_range}",
-    "java": ">=21",
+    "java": ">=25",
     "modmenu": "*",
     "cloth-config": "*"
   }
