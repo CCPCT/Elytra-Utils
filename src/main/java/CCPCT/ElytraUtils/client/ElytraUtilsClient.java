@@ -84,7 +84,7 @@ public class ElytraUtilsClient implements ClientModInitializer {
             }
             // open config
             if (configScreenKey.isDown()) {
-                Minecraft.getInstance().setScreen(configScreen.getConfigScreen(Minecraft.getInstance().screen));
+                Minecraft.getInstance().gui.setScreen(configScreen.getConfigScreen(Minecraft.getInstance().gui.screen()));
             }
 
             gliding = client.player.isFallFlying();
