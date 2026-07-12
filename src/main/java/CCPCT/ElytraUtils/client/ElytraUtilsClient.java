@@ -37,8 +37,8 @@ public class ElytraUtilsClient implements ClientModInitializer {
     private static boolean lastGliding = false;
     private static boolean gliding = false;
     private static boolean lastFirework = false;
-    private static boolean firework = false;
     private static boolean alerted = false;
+    public static boolean lastSwapKeyDown = false;
 
     @Override
     public void onInitializeClient() {
@@ -80,12 +80,19 @@ public class ElytraUtilsClient implements ClientModInitializer {
             if (client.player == null) return;
             // swap totem
             if (swapElytraKey.isDown()) {
-                Logic.swapElytra();
+                if (!lastSwapKeyDown) {
+                    Logic.swapElytra();
+                    lastSwapKeyDown = true;
+                }
+            } else {
+                lastSwapKeyDown = false;
             }
+
             // open config
             if (configScreenKey.isDown()) {
                 Minecraft.getInstance().setScreen(configScreen.getConfigScreen(Minecraft.getInstance().screen));
             }
+
 
             gliding = client.player.isFallFlying();
             jumpKeyDown = endFlightKey.isDown();
@@ -100,12 +107,16 @@ public class ElytraUtilsClient implements ClientModInitializer {
             lastJumpKeyDown = jumpKeyDown;
             lastGliding = gliding;
 
-            firework = quickFireworkKey.isDown();
-            if (firework && !lastFirework) {
-                Logic.quickFirework();
+
+            if (quickFireworkKey.isDown()) {
+                if (!lastFirework) {
+                    Logic.quickFirework();
+                    lastFirework = true;
+                }
+            } else {
+                lastFirework = false;
             }
 
-            lastFirework = firework;
 
             if (ModConfig.get().durabilityAlert) {
                 ItemStack item = client.player.getInventory().getItem(38);
