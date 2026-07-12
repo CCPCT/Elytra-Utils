@@ -1,15 +1,22 @@
 package CCPCT.ElytraUtils.util;
 
+import CCPCT.ElytraUtils.config.ModConfig;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.NonNullList;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class Logic {
+
     public static void swapElytra() {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
@@ -32,18 +39,16 @@ public class Logic {
             }
             Chat.send("Swapping to Elytra!");
         }
-        if (spot < 9){
-            spot+=36;
-        }
+
         PacketHandler.swapItems(spot,6);
     }
 
     public static int getElytraSpot() {
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null) return -1;
+        assert Minecraft.getInstance().player != null;
+        NonNullList<Slot> slots = Minecraft.getInstance().player.inventoryMenu.slots;
 
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            ItemStack stack = player.getInventory().getItem(i);
+        for (int i = 9; i <= 45; i++) {
+            ItemStack stack = slots.get(i).getItem();
             if (!stack.isEmpty() && stack.getItem() == Items.ELYTRA && stack.getMaxDamage()-stack.getDamageValue()>=10) {
                 return i;
             }
@@ -51,40 +56,115 @@ public class Logic {
         return -1;
     }
 
-    public static int getChestplateSpot() {
-        final Map<Item, Integer> chestplateValues = Map.of(
-                Items.AIR, 1,
-                Items.LEATHER_CHESTPLATE, 2,
-                Items.GOLDEN_CHESTPLATE, 3,
-                Items.CHAINMAIL_CHESTPLATE, 4,
-                Items.IRON_CHESTPLATE, 5,
-                Items.DIAMOND_CHESTPLATE, 6,
-                Items.NETHERITE_CHESTPLATE, 7
-        );
+    public static boolean itemHasEnchantment(ItemStack stack, String ench) {
+        return stack.getEnchantments().entrySet().stream().anyMatch(entry -> entry.getKey().is(Identifier.withDefaultNamespace(ench)));
+    }
 
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null) return -1;
+    public static void spearBoost() {
+        Minecraft minecraft = Minecraft.getInstance();
+        LocalPlayer player = minecraft.player;
+        float delta = minecraft.getDeltaTracker().getGameTimeDeltaTicks();
+        assert player != null;
+
+        if (player.inventoryMenu.slots.get(6).getItem().getItem() != Items.ELYTRA) {
+            Chat.send("Not Equipping elytra");
+            return;
+        }
+
+        if (player.getAttackStrengthScale(delta) < 1) {
+            Chat.send("Still in attack cooldown");
+            return;
+        }
+
+
+        int delay = 2;
+        if (ModConfig.get().autoDelayFly) {
+            if (minecraft.getConnection() != null) {
+                PlayerInfo entry = minecraft.getConnection().getPlayerInfo(player.getUUID());
+                if (entry != null) {
+                    delay = (entry.getLatency() + 50) / 50; // ms to tick conversion
+                }
+            }
+        }
+
+        Chat.debug("Spear delay: "+delay);
+
+
+
+        if (itemHasEnchantment(player.getMainHandItem(), "lunge")) {
+            PacketHandler.clickItem(6);
+            PacketHandler.Packet.stall();
+            PacketHandler.clickItem(6);
+            PacketHandler.Packet.attack();
+            for (int i = 0; i < delay; i++) {
+                PacketHandler.Packet.stall();
+            }
+            PacketHandler.Packet.fly();
+            return;
+        }
+
+        int slot = -1;
+        for (int i = 0; i < 9; i++) {
+            if (player.getSlot(i) == null) continue;
+            if (itemHasEnchantment(player.getSlot(i).get(), "lunge")) {
+                slot = i;
+                break;
+            }
+        }
+
+        if (slot == -1) {
+            Chat.send("No spear :(");
+            return;
+        }
+
+        int beforeSlot = player.getInventory().getSelectedSlot();
+        if (player.isFallFlying()) {
+            PacketHandler.clickItem(6);
+            PacketHandler.Packet.stall();
+            PacketHandler.clickItem(6);
+            PacketHandler.Packet.stall();
+        }
+        PacketHandler.Packet.hotbar(slot);
+        PacketHandler.Packet.attack();
+        for (int i = 0; i < delay; i++) {
+            PacketHandler.Packet.stall();
+        }
+        PacketHandler.Packet.fly();
+        PacketHandler.Packet.hotbar(beforeSlot);
+
+
+
+    }
+
+    final static Map<Item, Integer> chestplateValues = Map.of(
+            Items.AIR, 1,
+            Items.LEATHER_CHESTPLATE, 2,
+            Items.GOLDEN_CHESTPLATE, 3,
+            Items.CHAINMAIL_CHESTPLATE, 4,
+            Items.COPPER_CHESTPLATE, 5,
+            Items.IRON_CHESTPLATE, 6,
+            Items.DIAMOND_CHESTPLATE, 7,
+            Items.NETHERITE_CHESTPLATE, 8
+    );
+
+    public static int getChestplateSpot() {
+        assert Minecraft.getInstance().player != null;
+        NonNullList<Slot> slots = Minecraft.getInstance().player.inventoryMenu.slots;
+
 
         // default assume inventory full without chestplate, use the first item in inventory
         int bestIndex = 0;
         int bestValue = 0;
 
-        for (int i = 9; i < player.getInventory().getContainerSize(); i++) {
-            ItemStack stack = player.getInventory().getItem(i);
-            int currentValue = chestplateValues.getOrDefault(player.getInventory().getItem(i).getItem(), 0);
+        for (int i = 9; i <= 45; i++) {
+            ItemStack stack = slots.get(i).getItem();
+            int currentValue = chestplateValues.getOrDefault(stack.getItem(), 0);
             if (currentValue > bestValue && (stack.getMaxDamage()-stack.getDamageValue()>=10 || stack.getItem() == Items.AIR)){
                 bestValue = currentValue;
                 bestIndex = i;
             }
         }
-        for (int i = 0; i < 9; i++) {
-            ItemStack stack = player.getInventory().getItem(i);
-            int currentValue = chestplateValues.getOrDefault(player.getInventory().getItem(i).getItem(), 0);
-            if (currentValue > bestValue && (stack.getMaxDamage()-stack.getDamageValue()>=10 || stack.getItem() == Items.AIR)){
-                bestValue = currentValue;
-                bestIndex = i;
-            }
-        }
+
         if (bestValue == 0){
             return -1;
         }
@@ -92,35 +172,11 @@ public class Logic {
     }
 
     public static int getItemSpot(Item item){
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null) return -1;
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            if (player.getInventory().getItem(i).getItem() == item){
+        assert Minecraft.getInstance().player != null;
+        NonNullList<Slot> slots = Minecraft.getInstance().player.inventoryMenu.slots;
+        for (int i = 9; i <= 44; i++) {
+            if (slots.get(i).getItem().getItem() == item){
                 return i;
-            }
-        }
-        return -1;
-    }
-
-    public static ItemStack getItemStack(int slot){
-        // input protocol number
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null) return null;
-        if (slot == 45) return player.getOffhandItem();
-        else if (slot <= 8) return player.getInventory().getItem(8-slot+36);
-        else if (slot >= 36) return player.getInventory().getItem(slot-36);
-        else return player.getInventory().getItem(slot);
-    }
-
-    public static int invToProtocolSlot(int slot,int invType){
-        // invType -> 0:main, 1:armour, 2:offHand
-        if (invType==2) return 45;
-        if (invType==1) return 8-slot;
-        if (invType==0){
-            if (slot<=8) {
-                return slot + 36;
-            } else {
-                return slot;
             }
         }
         return -1;
@@ -135,19 +191,14 @@ public class Logic {
             return;
         }
         Chat.send("Boosting");
-        PacketHandler.swapUseItems(slot);
+        PacketHandler.swapUseFirework(slot);
     }
 
     public static int getItemCount(Item item){
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return -1;
         Inventory inventory = player.getInventory();
-        int count = 0;
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            if (inventory.getItem(i).getItem() == item){
-                count += inventory.getItem(i).getCount();
-            }
-        }
+        int count = IntStream.range(0, player.getInventory().getContainerSize()).filter(i -> inventory.getItem(i).getItem() == item).map(i -> inventory.getItem(i).getCount()).sum();
         if (player.getOffhandItem().getItem() == item){
             count += player.getOffhandItem().getCount();
         }

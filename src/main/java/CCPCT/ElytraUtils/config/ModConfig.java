@@ -12,6 +12,8 @@ public class ModConfig {
     public boolean chatfeedback = true;
     public boolean disableFireworkOnWall = true;
     public boolean durabilityAlert = true;
+    public boolean autoDelayFly = false;
+    public int delayFly = 1;
     public boolean replaceBreakingElytra = true;
     public boolean debug = false;
 

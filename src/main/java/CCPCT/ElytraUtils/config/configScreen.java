@@ -50,6 +50,19 @@ public class configScreen extends Screen {
                 .setSaveConsumer(newValue -> ModConfig.get().replaceBreakingElytra = newValue)
                 .build());
 
+        generalTab.addEntry(entryBuilder.startBooleanToggle(Component.literal("Auto adjust flight delay after spear boost"),ModConfig.get().autoDelayFly)
+                .setDefaultValue(true)
+                .setTooltip(Component.literal("recommended enabling this option unless unable to fly after spear boost, which set delay manually with slider below"))
+                .setSaveConsumer(newValue -> ModConfig.get().autoDelayFly = newValue)
+                .build());
+
+        generalTab.addEntry(entryBuilder.startIntSlider(Component.literal("Delay flight after spear boost"),ModConfig.get().delayFly,0,10)
+                .setDefaultValue(1)
+                        .setMin(0).setMax(10)
+                .setTooltip(Component.literal("Prevent lag dropping flight packet by adding delay (in ticks)\n0/1 works well in single player,\nand 2+ works better in multiplayer, (can increase with instability of server connection/ mspt)"))
+                .setSaveConsumer(newValue -> ModConfig.get().delayFly = newValue)
+                .build());
+
         generalTab.addEntry(entryBuilder.startBooleanToggle(Component.literal("Debug"),ModConfig.get().debug)
                 .setDefaultValue(false)
                 .setTooltip(Component.literal("get debug chat for dev. Not recommended for normal use"))
