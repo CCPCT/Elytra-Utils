@@ -59,7 +59,8 @@ public class PacketHandler implements ClientModInitializer {
         public static void clickNow(int slot, int button, ContainerInput type) {
             MultiPlayerGameMode interactionManager = Minecraft.getInstance().gameMode;
             LocalPlayer player = Minecraft.getInstance().player;
-            if (player == null) return;
+            assert interactionManager != null;
+            assert player != null;
             interactionManager.handleContainerInput(player.containerMenu.containerId, slot, button, type, player);
         }
 
@@ -72,6 +73,7 @@ public class PacketHandler implements ClientModInitializer {
     //packet methods
     public static void swapItems(int start, int end) {
         // use protocal number
+        assert Minecraft.getInstance().player != null;
         NonNullList<Slot> slots = Minecraft.getInstance().player.containerMenu.slots;
 
         ItemStack startItem = slots.get(start).getItem();
@@ -98,7 +100,9 @@ public class PacketHandler implements ClientModInitializer {
             useItem();
             selectHotbarSlot(selectedSlot);
         } else {
-            ItemStack startItem = player.getSlot(start).get();
+            NonNullList<Slot> slots = Minecraft.getInstance().player.containerMenu.slots;
+
+            ItemStack startItem = slots.get(start).getItem();
             int end = selectedSlot + 36;
 
             clickItem(start,false);
@@ -122,8 +126,9 @@ public class PacketHandler implements ClientModInitializer {
     public static void useItem(){
         LocalPlayer player = Minecraft.getInstance().player;
         MultiPlayerGameMode interactionManager = Minecraft.getInstance().gameMode;
+        assert interactionManager != null;
+        assert player != null;
 
-        if (player == null) return;
         interactionManager.useItem(player, InteractionHand.MAIN_HAND);
 
         Chat.debug("used item");
@@ -133,7 +138,7 @@ public class PacketHandler implements ClientModInitializer {
         // use protocol number
         if (slot < 0 || slot > 8) return; // validate slot
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player==null || player.getInventory()==null) return;
+        assert player != null;
         player.getInventory().setSelectedSlot(slot);
     }
 }

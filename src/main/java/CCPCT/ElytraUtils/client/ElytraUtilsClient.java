@@ -76,7 +76,7 @@ public class ElytraUtilsClient implements ClientModInitializer {
         // Register client tick listener
 
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+        ClientTickEvents.START_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
             // swap totem
             if (swapElytraKey.isDown()) {
@@ -99,7 +99,7 @@ public class ElytraUtilsClient implements ClientModInitializer {
             if (lastGliding && gliding && jumpKeyDown && !lastJumpKeyDown) {
                 Chat.send("Ended flight");
 
-                PacketHandler.Packet.empty();
+                //PacketHandler.Packet.empty();
                 PacketHandler.clickItem(6, true);
                 PacketHandler.clickItem(6, true);
 
