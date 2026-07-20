@@ -101,7 +101,7 @@ public class ElytraUtilsClient implements ClientModInitializer {
 
                 PacketHandler.Packet.empty();
                 PacketHandler.clickItem(6, true);
-                PacketHandler.clickItem(6, false);
+                PacketHandler.clickItem(6, true);
 
             }
             lastJumpKeyDown = jumpKeyDown;

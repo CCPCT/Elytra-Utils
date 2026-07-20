@@ -5,8 +5,10 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.NonNullList;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -70,10 +72,10 @@ public class PacketHandler implements ClientModInitializer {
     //packet methods
     public static void swapItems(int start, int end) {
         // use protocal number
-        ItemStack startItem = Logic.getItemStack(start);
-        if (startItem == null) return;
-        ItemStack endItem = Logic.getItemStack(end);
-        if (endItem == null) return;
+        NonNullList<Slot> slots = Minecraft.getInstance().player.containerMenu.slots;
+
+        ItemStack startItem = slots.get(start).getItem();
+        ItemStack endItem = slots.get(end).getItem();
 
         Chat.debug(start + " to " + end);
         Chat.debug(startItem + " to " + endItem);
@@ -81,8 +83,6 @@ public class PacketHandler implements ClientModInitializer {
         clickItem(end,false);
 
         //dont need if item in end slot is originally empty
-        Chat.debug(endItem.getItem() + "");
-        if (endItem.getItem() == Items.AIR) return;
         clickItem(start,false);
     }
 
@@ -98,11 +98,9 @@ public class PacketHandler implements ClientModInitializer {
             useItem();
             selectHotbarSlot(selectedSlot);
         } else {
-            ItemStack startItem = Logic.getItemStack(start);
+            ItemStack startItem = player.getSlot(start).get();
             int end = selectedSlot + 36;
-            ItemStack endItem = Logic.getItemStack(end);
 
-            if (startItem==null || endItem == null) return;
             clickItem(start,false);
             clickItem(end,false);
             useItem();

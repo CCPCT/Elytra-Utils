@@ -54,3 +54,12 @@ java {
 jar {
     from "LICENSE"
 }
+
+loom {
+    runs {
+        client {
+            programArgs "--quickPlaySingleplayer", "New World"
+            programArgs "--username", "Dev"
+        }
+    }
+}
