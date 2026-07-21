@@ -79,6 +79,7 @@ public class Logic {
             PacketHandler.clickItem(6);
             PacketHandler.Packet.stall();
             PacketHandler.clickItem(6);
+            PacketHandler.Packet.stall();
             PacketHandler.Packet.attack();
             PacketHandler.Packet.stall();
             PacketHandler.Packet.fly();
@@ -103,6 +104,7 @@ public class Logic {
         PacketHandler.clickItem(6);
         PacketHandler.Packet.stall();
         PacketHandler.clickItem(6);
+        PacketHandler.Packet.stall();
         PacketHandler.Packet.hotbar(slot);
         PacketHandler.Packet.attack();
         PacketHandler.Packet.stall();
