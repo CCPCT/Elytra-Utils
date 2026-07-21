@@ -78,8 +78,8 @@ public class Logic {
         if (itemHasEnchantment(player.getMainHandItem(), "lunge")) {
             PacketHandler.clickItem(6);
             PacketHandler.Packet.stall();
-            PacketHandler.Packet.attack();
             PacketHandler.clickItem(6);
+            PacketHandler.Packet.attack();
             PacketHandler.Packet.stall();
             PacketHandler.Packet.fly();
             return;
@@ -102,9 +102,9 @@ public class Logic {
         int beforeSlot = player.getInventory().getSelectedSlot();
         PacketHandler.clickItem(6);
         PacketHandler.Packet.stall();
+        PacketHandler.clickItem(6);
         PacketHandler.Packet.hotbar(slot);
         PacketHandler.Packet.attack();
-        PacketHandler.clickItem(6);
         PacketHandler.Packet.stall();
         PacketHandler.Packet.fly();
         PacketHandler.Packet.hotbar(beforeSlot);

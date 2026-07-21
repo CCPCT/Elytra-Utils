@@ -66,6 +66,8 @@ public class PacketHandler implements ClientModInitializer {
                                     player,
                                     ServerboundPlayerCommandPacket.Action.START_FALL_FLYING
                             ));
+                        } else {
+                            Chat.send("Cant fly");
                         }
 
                     }
@@ -75,7 +77,7 @@ public class PacketHandler implements ClientModInitializer {
 
                     case HOTBAR -> {
                         player.connection.send(new ServerboundSetCarriedItemPacket(packet.slot));
-                        player.getInventory().setSelectedSlot(packet.slot);
+                        //player.getInventory().setSelectedSlot(packet.slot);
                     }
 
                     default -> {return;}
@@ -183,13 +185,5 @@ public class PacketHandler implements ClientModInitializer {
         interactionManager.useItem(player, InteractionHand.MAIN_HAND);
 
         Chat.debug("used item");
-    }
-
-    public static void selectHotbarSlot(int slot) {
-        // use protocol number
-        if (slot < 0 || slot > 8) return; // validate slot
-        LocalPlayer player = Minecraft.getInstance().player;
-        assert player != null;
-        player.getInventory().setSelectedSlot(slot);
     }
 }
