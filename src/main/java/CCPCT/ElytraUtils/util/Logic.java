@@ -3,7 +3,7 @@ package CCPCT.ElytraUtils.util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.NonNullList;
-import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 public class Logic {
+
     public static void swapElytra() {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
@@ -42,7 +43,7 @@ public class Logic {
 
     public static int getElytraSpot() {
         assert Minecraft.getInstance().player != null;
-        NonNullList<Slot> slots = Minecraft.getInstance().player.containerMenu.slots;
+        NonNullList<Slot> slots = Minecraft.getInstance().player.inventoryMenu.slots;
 
         for (int i = 9; i <= 45; i++) {
             ItemStack stack = slots.get(i).getItem();
@@ -51,6 +52,65 @@ public class Logic {
             }
         }
         return -1;
+    }
+
+    public static boolean itemHasEnchantment(ItemStack stack, String ench) {
+        return stack.getEnchantments().entrySet().stream().anyMatch(entry -> entry.getKey().is(Identifier.withDefaultNamespace(ench)));
+    }
+
+    public static void spearBoost() {
+        Minecraft minecraft = Minecraft.getInstance();
+        LocalPlayer player = minecraft.player;
+        float delta = minecraft.getDeltaTracker().getGameTimeDeltaTicks();
+        assert player != null;
+
+        if (player.inventoryMenu.slots.get(6).getItem().getItem() != Items.ELYTRA) {
+            Chat.send("Not Equipping elytra");
+            return;
+        }
+
+        if (player.getAttackStrengthScale(delta) < 1) {
+            Chat.send("Still in attack cooldown");
+            return;
+        }
+
+
+        if (itemHasEnchantment(player.getMainHandItem(), "lunge")) {
+            PacketHandler.clickItem(6);
+            PacketHandler.Packet.stall();
+            PacketHandler.Packet.attack();
+            PacketHandler.clickItem(6);
+            PacketHandler.Packet.stall();
+            PacketHandler.Packet.fly();
+            return;
+        }
+
+        int slot = -1;
+        for (int i = 0; i < 9; i++) {
+            if (player.getSlot(i) == null) continue;
+            if (itemHasEnchantment(player.getSlot(i).get(), "lunge")) {
+                slot = i;
+                break;
+            }
+        }
+
+        if (slot == -1) {
+            Chat.send("No spear :(");
+            return;
+        }
+
+        int beforeSlot = player.getInventory().getSelectedSlot();
+        PacketHandler.clickItem(6);
+        PacketHandler.Packet.stall();
+        PacketHandler.Packet.hotbar(slot);
+        PacketHandler.Packet.attack();
+        PacketHandler.clickItem(6);
+        PacketHandler.Packet.stall();
+        PacketHandler.Packet.fly();
+        PacketHandler.Packet.hotbar(beforeSlot);
+
+
+
     }
 
     final static Map<Item, Integer> chestplateValues = Map.of(
@@ -65,8 +125,8 @@ public class Logic {
     );
 
     public static int getChestplateSpot() {
-
-        NonNullList<Slot> slots = Minecraft.getInstance().player.containerMenu.slots;
+        assert Minecraft.getInstance().player != null;
+        NonNullList<Slot> slots = Minecraft.getInstance().player.inventoryMenu.slots;
 
 
         // default assume inventory full without chestplate, use the first item in inventory
@@ -90,7 +150,7 @@ public class Logic {
 
     public static int getItemSpot(Item item){
         assert Minecraft.getInstance().player != null;
-        NonNullList<Slot> slots = Minecraft.getInstance().player.containerMenu.slots;
+        NonNullList<Slot> slots = Minecraft.getInstance().player.inventoryMenu.slots;
         for (int i = 9; i <= 44; i++) {
             if (slots.get(i).getItem().getItem() == item){
                 return i;
@@ -108,7 +168,7 @@ public class Logic {
             return;
         }
         Chat.send("Boosting");
-        PacketHandler.swapUseItems(slot);
+        PacketHandler.swapUseFirework(slot);
     }
 
     public static int getItemCount(Item item){

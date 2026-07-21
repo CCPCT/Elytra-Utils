@@ -28,17 +28,25 @@ import static CCPCT.ElytraUtils.config.ModConfig.load;
 public class ElytraUtilsClient implements ClientModInitializer {
     final public static String MODID = "elytrautils";
     final public static KeyMapping.Category KEYBIND_CAT = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MODID, "keymap"));
+
     public static KeyMapping swapElytraKey;
     public static KeyMapping configScreenKey;
     public static KeyMapping endFlightKey;
     public static KeyMapping quickFireworkKey;
+    public static KeyMapping spearKey;
+
+
     private static boolean lastJumpKeyDown = false;
-    private static boolean jumpKeyDown = false;
     private static boolean lastGliding = false;
+    private static boolean lastSpearKeyDown = false;
+
+
     private static boolean gliding = false;
     private static boolean lastFirework = false;
     private static boolean alerted = false;
     public static boolean lastSwapKeyDown = false;
+
+    private final static String KEY_NAME = "key.elytrautils.";
 
     @Override
     public void onInitializeClient() {
@@ -46,32 +54,40 @@ public class ElytraUtilsClient implements ClientModInitializer {
         load();
         // Register the KeyMapping
         swapElytraKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "elytrautils:key.swap_elytra", // translation key
+                KEY_NAME + "swap_elytra", // translation key
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_G,       // default key
                 KEYBIND_CAT      // category in controls menu
         ));
 
         configScreenKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "elytrautils:key.config_menu", // translation key
+                KEY_NAME + "config_menu", // translation key
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_DONT_CARE,       // default key
                 KEYBIND_CAT      // category in controls menu
         ));
 
         endFlightKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "elytrautils:key.end_flight", // translation key
+                KEY_NAME + "end_flight", // translation key
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_SPACE,       // default key
                 KEYBIND_CAT      // category in controls menu
         ));
 
         quickFireworkKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "elytrautils:key.quick_firework", // translation key
+                KEY_NAME + "quick_firework", // translation key
                 InputConstants.Type.MOUSE,
                 GLFW.GLFW_MOUSE_BUTTON_MIDDLE,       // default key
                 KEYBIND_CAT      // category in controls menu
         ));
+
+        spearKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                KEY_NAME + "spear", // translation key
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_DONT_CARE,       // default key
+                KEYBIND_CAT      // category in controls menu
+        ));
+
 
         // Register client tick listener
 
@@ -95,26 +111,36 @@ public class ElytraUtilsClient implements ClientModInitializer {
 
 
             gliding = client.player.isFallFlying();
-            jumpKeyDown = endFlightKey.isDown();
-            if (lastGliding && gliding && jumpKeyDown && !lastJumpKeyDown) {
+            if (lastGliding && gliding && endFlightKey.isDown() && !lastJumpKeyDown) {
                 Chat.send("Ended flight");
 
                 //PacketHandler.Packet.empty();
-                PacketHandler.clickItem(6, true);
-                PacketHandler.clickItem(6, true);
+                PacketHandler.clickItem(6);
+                PacketHandler.Packet.stall();
+                PacketHandler.clickItem(6);
 
             }
-            lastJumpKeyDown = jumpKeyDown;
+            lastJumpKeyDown = endFlightKey.isDown();
             lastGliding = gliding;
 
 
             if (quickFireworkKey.isDown()) {
                 if (!lastFirework) {
-                    Logic.quickFirework();
                     lastFirework = true;
+                    Logic.quickFirework();
                 }
             } else {
                 lastFirework = false;
+            }
+
+
+            if (spearKey.isDown()) {
+                if (!lastSpearKeyDown) {
+                    lastSpearKeyDown = true;
+                    Logic.spearBoost();
+                }
+            } else {
+                lastSpearKeyDown = false;
             }
 
 

@@ -1,36 +1,86 @@
 package CCPCT.ElytraUtils.util;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
+import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
+import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-
-import java.util.ArrayDeque;
-import java.util.Queue;
 
 
 public class PacketHandler implements ClientModInitializer {
 
-    private static final Queue<Packet> packetsToSend = new ArrayDeque<>();
+    public enum PacketType {
+        SLOT,
+        ATTACK,
+        FLY,
+        HOTBAR,
+        USE,
+
+
+        STALL,
+    }
+
+    private static final ObjectArrayFIFOQueue<Packet> packetsToSend = new ObjectArrayFIFOQueue<>(10);
 
     @Override
     public void onInitializeClient() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (packetsToSend.isEmpty()){
-                return;
+            MultiPlayerGameMode gameMode = client.gameMode;
+            LocalPlayer player = client.player;
+            assert gameMode != null && player != null;
+
+            while (true) {
+                if (packetsToSend.isEmpty()){
+                    return;
+                }
+                var packet = packetsToSend.dequeue();
+                if (packet==null){
+                    return;
+                }
+                switch (packet.type) {
+                    case SLOT -> {
+                        gameMode.handleContainerInput(player.containerMenu.containerId, packet.slot, packet.button, packet.input, player);
+                    }
+                    case ATTACK -> {
+                        player.connection.send(new ServerboundPlayerActionPacket(
+                                ServerboundPlayerActionPacket.Action.STAB,player.getOnPos(),
+                                Direction.fromYRot(player.getYRot(client.getDeltaTracker().getGameTimeDeltaTicks()))));
+
+                        player.connection.send(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
+                        player.resetOnlyAttackStrengthTicker();
+                    }
+                    case FLY -> {
+                        if (player.tryToStartFallFlying()) {
+                            player.connection.send(new ServerboundPlayerCommandPacket(
+                                    player,
+                                    ServerboundPlayerCommandPacket.Action.START_FALL_FLYING
+                            ));
+                        }
+
+                    }
+                    case USE -> {
+                        useItem();
+                    }
+
+                    case HOTBAR -> {
+                        player.connection.send(new ServerboundSetCarriedItemPacket(packet.slot));
+                        player.getInventory().setSelectedSlot(packet.slot);
+                    }
+
+                    default -> {return;}
+                }
             }
-            var packet = packetsToSend.poll();
-            if (packet==null || packet.type == null ){
-                return;
-            }
-            sendPacket(packet);
         });
     }
 
@@ -39,34 +89,38 @@ public class PacketHandler implements ClientModInitializer {
         packetsToSend.clear();
     }
 
-    private static void sendPacket(Packet packet) {
-        MultiPlayerGameMode interactionManager = Minecraft.getInstance().gameMode;
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null || interactionManager == null) return;
-        interactionManager.handleContainerInput(player.containerMenu.containerId, packet.slot, packet.button, packet.type, player);
-    }
 
     public static boolean isQueueEmpty(){
         return packetsToSend.isEmpty();
     }
 
-    public record Packet(int slot, int button, ContainerInput type) {
+    public record Packet(PacketType type, int slot, int button, ContainerInput input) {
         // Helper constructor for a standard slot click
-        public static void click(int slot, int button, ContainerInput type) {
-            packetsToSend.add(new Packet(slot, button, type));
+        public static void click(int slot, int button, ContainerInput input) {
+            packetsToSend.enqueue(new Packet(PacketType.SLOT, slot, button, input));
         }
 
-        public static void clickNow(int slot, int button, ContainerInput type) {
-            MultiPlayerGameMode interactionManager = Minecraft.getInstance().gameMode;
-            LocalPlayer player = Minecraft.getInstance().player;
-            assert interactionManager != null;
-            assert player != null;
-            interactionManager.handleContainerInput(player.containerMenu.containerId, slot, button, type, player);
+        public static void attack() {
+            packetsToSend.enqueue(new Packet(PacketType.ATTACK, 0, 0, null));
         }
+
+        public static void fly() {
+            packetsToSend.enqueue(new Packet(PacketType.FLY, 0, 0, null));
+        }
+
+        public static void hotbar(int slot) {
+            packetsToSend.enqueue(new Packet(PacketType.HOTBAR, slot, 0, null));
+        }
+
+        public static void use() {
+            packetsToSend.enqueue(new Packet(PacketType.USE,0,0,null));
+        }
+
+
 
         // update
-        public static void empty() {
-            packetsToSend.add(new Packet(0, 0, null));
+        public static void stall() {
+            packetsToSend.enqueue(new Packet(PacketType.STALL, 0, 0, null));
         }
     }
 
@@ -81,46 +135,43 @@ public class PacketHandler implements ClientModInitializer {
 
         Chat.debug(start + " to " + end);
         Chat.debug(startItem + " to " + endItem);
-        clickItem(start,false);
-        clickItem(end,false);
+        clickItem(start);
+        clickItem(end);
 
         //dont need if item in end slot is originally empty
-        clickItem(start,false);
+        clickItem(start);
     }
 
-    public static void swapUseItems(int start) {
+    public static void swapUseFirework(int start) {
         Minecraft client = Minecraft.getInstance();
         LocalPlayer player = client.player;
         if (player == null) return;
 
         int selectedSlot = player.getInventory().getSelectedSlot();
 
-        if (start<=8) {
-            selectHotbarSlot(start);
-            useItem();
-            selectHotbarSlot(selectedSlot);
+        if (start>=36&&start<=44) {
+            Chat.debug(start-36);
+            Packet.hotbar(start-36);
+            Packet.use();
+            Packet.hotbar(selectedSlot);
         } else {
             NonNullList<Slot> slots = Minecraft.getInstance().player.containerMenu.slots;
 
             ItemStack startItem = slots.get(start).getItem();
             int end = selectedSlot + 36;
 
-            clickItem(start,false);
-            clickItem(end,false);
-            useItem();
+            clickItem(start);
+            clickItem(end);
+            Packet.use();
             startItem.setCount(startItem.getCount()-1);
-            clickItem(end,false);
-            clickItem(start,false);
+            clickItem(end);
+            clickItem(start);
         }
 
     }
 
-    public static void clickItem(int slot, boolean delay) {
-        if (delay) {
-            Packet.click(slot, 0, ContainerInput.PICKUP);
-        } else {
-            Packet.clickNow(slot, 0, ContainerInput.PICKUP);
-        }
+    public static void clickItem(int slot) {
+        Packet.click(slot, 0, ContainerInput.PICKUP);
     }
 
     public static void useItem(){

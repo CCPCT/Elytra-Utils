@@ -1,6 +1,5 @@
-package CCPCT.ElytraUtils.ModMenu;
+package CCPCT.ElytraUtils.config;
 
-import CCPCT.ElytraUtils.config.configScreen;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 

@@ -17,7 +17,7 @@
       "CCPCT.ElytraUtils.util.PacketHandler"
     ],
     "modmenu": [
-      "CCPCT.ElytraUtils.ModMenu.ModMenu"
+      "CCPCT.ElytraUtils.config.ModMenu"
     ]
   },
   "mixins": [
