@@ -15,7 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Define your versions here
         mc_version: ["26.1"]
     steps:
       - name: Checkout Code
@@ -27,8 +26,10 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
       - name: Build Mod
-        # Uses the matrix variable for the target flag
         run: ./gradlew clean build --no-daemon -Ptarget=${{ matrix.mc_version }}
         env:
           GRADLE_OPTS: -Xmx4G -XX:+UseParallelGC
@@ -36,7 +37,6 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
         with:
-          # Unique name for each version's jar
           name: mod-jar-${{ matrix.mc_version }}
           path: build/libs/*.jar
 
