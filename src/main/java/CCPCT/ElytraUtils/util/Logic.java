@@ -1,6 +1,8 @@
 package CCPCT.ElytraUtils.util;
 
+import CCPCT.ElytraUtils.config.ModConfig;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.Identifier;
@@ -75,13 +77,28 @@ public class Logic {
         }
 
 
+        int delay = 2;
+        if (ModConfig.get().autoDelayFly) {
+            if (minecraft.getConnection() != null) {
+                PlayerInfo entry = minecraft.getConnection().getPlayerInfo(player.getUUID());
+                if (entry != null) {
+                    delay = (entry.getLatency() + 50) / 50; // ms to tick conversion
+                }
+            }
+        }
+
+        Chat.debug("Spear delay: "+delay);
+
+
+
         if (itemHasEnchantment(player.getMainHandItem(), "lunge")) {
             PacketHandler.clickItem(6);
             PacketHandler.Packet.stall();
             PacketHandler.clickItem(6);
-            PacketHandler.Packet.stall();
             PacketHandler.Packet.attack();
-            PacketHandler.Packet.stall();
+            for (int i = 0; i < delay; i++) {
+                PacketHandler.Packet.stall();
+            }
             PacketHandler.Packet.fly();
             return;
         }
@@ -101,13 +118,17 @@ public class Logic {
         }
 
         int beforeSlot = player.getInventory().getSelectedSlot();
-        PacketHandler.clickItem(6);
-        PacketHandler.Packet.stall();
-        PacketHandler.clickItem(6);
-        PacketHandler.Packet.stall();
+        if (player.isFallFlying()) {
+            PacketHandler.clickItem(6);
+            PacketHandler.Packet.stall();
+            PacketHandler.clickItem(6);
+            PacketHandler.Packet.stall();
+        }
         PacketHandler.Packet.hotbar(slot);
         PacketHandler.Packet.attack();
-        PacketHandler.Packet.stall();
+        for (int i = 0; i < delay; i++) {
+            PacketHandler.Packet.stall();
+        }
         PacketHandler.Packet.fly();
         PacketHandler.Packet.hotbar(beforeSlot);
 
