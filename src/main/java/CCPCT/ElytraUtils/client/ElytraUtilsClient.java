@@ -21,7 +21,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import org.lwjgl.glfw.GLFW;
 
 import static CCPCT.ElytraUtils.config.ModConfig.load;
 
@@ -55,36 +54,36 @@ public class ElytraUtilsClient implements ClientModInitializer {
         // Register the KeyMapping
         swapElytraKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 KEY_NAME + "swap_elytra", // translation key
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_G,       // default key
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_G,       // default key
                 KEYBIND_CAT      // category in controls menu
         ));
 
         configScreenKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 KEY_NAME + "config_menu", // translation key
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_DONT_CARE,       // default key
+                InputConstants.Type.KEYBOARD,
+                0,       // default key
                 KEYBIND_CAT      // category in controls menu
         ));
 
         endFlightKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 KEY_NAME + "end_flight", // translation key
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_SPACE,       // default key
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_SPACE,       // default key
                 KEYBIND_CAT      // category in controls menu
         ));
 
         quickFireworkKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 KEY_NAME + "quick_firework", // translation key
                 InputConstants.Type.MOUSE,
-                GLFW.GLFW_MOUSE_BUTTON_MIDDLE,       // default key
+                InputConstants.MOUSE_BUTTON_MIDDLE,       // default key
                 KEYBIND_CAT      // category in controls menu
         ));
 
         spearKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 KEY_NAME + "spear", // translation key
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_DONT_CARE,       // default key
+                InputConstants.Type.KEYBOARD,
+                0,       // default key
                 KEYBIND_CAT      // category in controls menu
         ));
 

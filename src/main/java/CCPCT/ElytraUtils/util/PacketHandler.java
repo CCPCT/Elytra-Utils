@@ -10,7 +10,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ContainerInput;
@@ -57,7 +56,6 @@ public class PacketHandler implements ClientModInitializer {
                                 ServerboundPlayerActionPacket.Action.STAB,player.getOnPos(),
                                 Direction.fromYRot(player.getYRot(client.getDeltaTracker().getGameTimeDeltaTicks()))));
 
-                        player.connection.send(new ServerboundSwingPacket(InteractionHand.MAIN_HAND));
                         player.resetOnlyAttackStrengthTicker();
                     }
                     case FLY -> {
